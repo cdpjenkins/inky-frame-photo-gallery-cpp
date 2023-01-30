@@ -1,19 +1,31 @@
-#include "pico_explorer.hpp"
-#include "drivers/st7789/st7789.hpp"
-#include "libraries/pico_graphics/pico_graphics.hpp"
+#include "libraries/inky_frame/inky_frame.hpp"
+
 
 using namespace pimoroni;
 
-ST7789 st7789(PicoExplorer::WIDTH, PicoExplorer::HEIGHT, ROTATE_0, false, get_spi_pins(BG_SPI_FRONT));
-PicoGraphics_PenRGB332 graphics(st7789.width, st7789.height, nullptr);
 
 int main() {
-    graphics.set_pen(255, 0, 0);
 
-    while(true) {
-        graphics.pixel(Point(0, 0));
+    // TODOs
+    // - set up stdio over UART
+    // - Do something with the LEDs
+    // - Filesystem on SD card
+    // - Use wifi to download pics
+    // - Display actual JPEGs 
 
-        // now we've done our drawing let's update the screen
-        st7789.update(&graphics);
-    }
+    InkyFrame inky;
+
+    inky.init();
+
+    // inky.led(InkyFrame::LED_ACTIVITY, 0);
+
+    // inky.led(InkyFrame::LED_CONNECTION, 0);
+
+
+    inky.set_pen(0);
+    inky.clear();
+
+    inky.set_pen(1);
+    inky.line(Point(0, 0), Point(599, 447));
+    inky.update();
 }
