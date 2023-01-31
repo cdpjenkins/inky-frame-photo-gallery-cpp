@@ -25,7 +25,13 @@ int main() {
     inky.set_pen(0);
     inky.clear();
 
-    inky.set_pen(1);
-    inky.line(Point(0, 0), Point(599, 447));
+    for (int y = 0; y < 448; y++) {
+            uint colour = (y / 16) % 8;
+            inky.set_pen(colour);
+            inky.line(Point(0, y), Point(599, y));
+    }
+
+    // inky.set_pen(1);
+    // inky.line(Point(0, 0), Point(599, 447));
     inky.update();
 }
