@@ -1,3 +1,6 @@
+#include <iostream>
+using namespace std;
+
 #include "libraries/inky_frame/inky_frame.hpp"
 
 
@@ -19,18 +22,16 @@ int main() {
     stdio_init_all();
     sleep_ms(500);
 
-    printf("\n");
-    printf("\n");
-    printf("\n");
+    cout << endl << endl << endl;
 
-    printf("initialising inky frame.. ");
-    printf("done!\n");
+    cout << "initialising inky frame.. " << endl;
+    cout << "done!\n" << endl;
 
     // inky.led(InkyFrame::LED_ACTIVITY, 0);
 
     // inky.led(InkyFrame::LED_CONNECTION, 0);
 
-    printf("About to draw on the screen...\n");
+    cout << "About to draw image to buffer..." << endl;
 
     inky.set_pen(0);
     inky.clear();
@@ -39,13 +40,13 @@ int main() {
             uint colour = (y / 16) % 8;
             inky.set_pen(colour);
             inky.line(Point(0, y), Point(599, y));
-            printf("%d,", y);
+            cout << y << ",";
     }
 
-    printf("\n");
-    printf("Finished drawing image\n");
+    cout << endl;
+    cout << "Finished drawing image to buffer" << endl;
+    cout << "Updating screen..." << endl;
     inky.update();
-    printf("Updated screen\n");
-    printf("\n");
+    cout << "Updated screen" << endl << endl;
     sleep_ms(500);
 }
