@@ -43,6 +43,9 @@ include(drivers/uc8159/uc8159)
 # target_link_libraries(${NAME} pico_stdlib jpegdec inky_frame fatfs hardware_pwm hardware_spi hardware_i2c hardware_rtc fatfs sdcard pico_graphics)
 target_link_libraries(${NAME} pico_stdlib   hardware_pwm hardware_spi hardware_i2c hardware_rtc   pico_graphics inky_frame )
 
+# enable usb output, disable uart output
+pico_enable_stdio_usb(inky-frame-photo-gallery-cpp 1)
+pico_enable_stdio_uart(inky-frame-photo-gallery-cpp 0)
 
 # create map/bin/hex file etc.
 pico_add_extra_outputs(${NAME})
