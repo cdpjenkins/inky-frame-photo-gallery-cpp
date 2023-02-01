@@ -84,6 +84,9 @@ void draw_jpeg(std::string filename, int x, int y, int w, int h) {
     jpegdec_seek_callback,
     jpegdec_draw_callback);
 
+    jpeg_decode_options.w = jpeg.getWidth();
+    jpeg_decode_options.h = jpeg.getHeight();
+
   jpeg.setPixelType(RGB565_BIG_ENDIAN);
 
   cout << "- starting jpeg decode.." << endl;
@@ -137,6 +140,7 @@ int main() {
     // inky.led(InkyFrame::LED_CONNECTION, 0);
 
     cout << "Drawing JPEG..." << endl;
+    inky.clear();
     draw_jpeg("IMG_20160529_181423035.jpg_scaled.jpg", 0, 0, 600, 448);
     cout << "JPEG done" << endl;
 
