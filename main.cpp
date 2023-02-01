@@ -32,15 +32,10 @@ int32_t jpegdec_read_callback(JPEGFILE *jpeg, uint8_t *p, int32_t c) {
     uint br;
     f_read((FIL *)jpeg->fHandle, p, c, &br);
 
-    cout << "Read " << br << " bytes" << endl;
-
     return br;
 }
 
 int32_t jpegdec_seek_callback(JPEGFILE *jpeg, int32_t p) {
-
-    cout << "Seek to " << p << endl;
-
     return f_lseek((FIL *)jpeg->fHandle, p) == FR_OK ? 1 : 0;
 }
 
@@ -68,33 +63,33 @@ int jpegdec_draw_callback(JPEGDRAW *draw) {
 
 void draw_jpeg(std::string filename, int x, int y, int w, int h) {
 
-  // TODO: this is a horrible way to do it but we need to pass some parameters
-  // into the jpegdec_draw_callback() method somehow and the library isn't
-  // setup to allow any sort of user data to be passed around - yuck
-  jpeg_decode_options.x = x;
-  jpeg_decode_options.y = y;
-  jpeg_decode_options.w = w;
-  jpeg_decode_options.h = h;
+    // TODO: this is a horrible way to do it but we need to pass some parameters
+    // into the jpegdec_draw_callback() method somehow and the library isn't
+    // setup to allow any sort of user data to be passed around - yuck
+    jpeg_decode_options.x = x;
+    jpeg_decode_options.y = y;
+    jpeg_decode_options.w = w;
+    jpeg_decode_options.h = h;
 
-  jpeg.open(
-    filename.c_str(),
-    jpegdec_open_callback,
-    jpegdec_close_callback,
-    jpegdec_read_callback,
-    jpegdec_seek_callback,
-    jpegdec_draw_callback);
+    jpeg.open(
+        filename.c_str(),
+        jpegdec_open_callback,
+        jpegdec_close_callback,
+        jpegdec_read_callback,
+        jpegdec_seek_callback,
+        jpegdec_draw_callback);
 
     jpeg_decode_options.w = jpeg.getWidth();
     jpeg_decode_options.h = jpeg.getHeight();
 
-  jpeg.setPixelType(RGB565_BIG_ENDIAN);
+    jpeg.setPixelType(RGB565_BIG_ENDIAN);
 
-  cout << "- starting jpeg decode.." << endl;
-  int start = millis();
-  jpeg.decode(0, 0, 0);
-  cout << "done in " << int(millis() - start) << " ms!" << endl;
+    cout << "- starting jpeg decode.." << endl;
+    int start = millis();
+    jpeg.decode(0, 0, 0);
+    cout << "done in " << int(millis() - start) << " ms!" << endl;
 
-  jpeg.close();
+    jpeg.close();
 }
 
 int main() {
@@ -124,42 +119,31 @@ int main() {
     }
     cout << "Filesystem mounted!" << endl;
 
-    cout << "Listing sd card contents.." << endl;
-    FILINFO file;
-    auto dir = new DIR();
-    f_opendir(dir, "/");
-    while(f_readdir(dir, &file) == FR_OK && file.fname[0]) {
-        cout << file.fname << " " << file.fsize << endl;
-    }
-    f_closedir(dir);
-    cout << "Listing done!" << endl;
+    while (true) {
+        cout << "Listing sd card contents.." << endl;
+        FILINFO file;
+        auto dir = new DIR();
+        f_opendir(dir, "/");
+        while(f_readdir(dir, &file) == FR_OK && file.fname[0]) {
+            cout << file.fname << " " << file.fsize << endl;
 
+            cout << "Drawing JPEG..." << endl;
+            inky.clear();
+            draw_jpeg(file.fname, 0, 0, 600, 448);
+            cout << "JPEG done" << endl;
+
+            cout << "Updating screen..." << endl;
+            inky.update();
+            cout << "Updated screen" << endl << endl;
+            sleep_ms(600000);
+        }
+        f_closedir(dir);
+        cout << "Listing done!" << endl;
+    }
 
     // inky.led(InkyFrame::LED_ACTIVITY, 0);
 
     // inky.led(InkyFrame::LED_CONNECTION, 0);
 
-    cout << "Drawing JPEG..." << endl;
-    inky.clear();
-    draw_jpeg("IMG_20160529_181423035.jpg_scaled.jpg", 0, 0, 600, 448);
-    cout << "JPEG done" << endl;
 
-        // cout << "About to draw image to buffer..." << endl;
-
-        // inky.set_pen(0);
-        // inky.clear();
-
-        // for (int y = 0; y < 448; y++) {
-        //         uint colour = (y / 16) % 8;
-        //         inky.set_pen(colour);
-        //         inky.line(Point(0, y), Point(599, y));
-        //         cout << y << ",";
-        // }
-
-        // cout << endl;
-        // cout << "Finished drawing image to buffer" << endl;
-    cout << "Updating screen..." << endl;
-    inky.update();
-    cout << "Updated screen" << endl << endl;
-    sleep_ms(500);
 }
