@@ -10,9 +10,7 @@ using namespace pimoroni;
 int main() {
 
     // TODOs
-    // - set up stdio over UART
     // - Do something with the LEDs
-    // - Filesystem on SD card
     // - Use wifi to download pics
     // - Display actual JPEGs 
 
@@ -20,12 +18,37 @@ int main() {
     inky.init();
 
     stdio_init_all();
-    sleep_ms(500);
+    sleep_ms(1000);
 
     cout << endl << endl << endl;
 
+    for (int i = 0; i < 100; i++) {
+        cout << i << endl;
+        sleep_ms(10);
+    }
+
     cout << "initialising inky frame.. " << endl;
     cout << "done!\n" << endl;
+
+    cout << "Mounting SD card filesystem.. " << endl;
+    FATFS fs;
+    FRESULT fr = f_mount(&fs, "", 1);
+    if (fr != FR_OK) {
+        cout << "Failed to mount SD card filesystem, error: " << fr << endl;
+        return 0;
+    }
+    cout << "Filesystem mounted!" << endl;
+
+    cout << "Listing sd card contents.." << endl;
+    FILINFO file;
+    auto dir = new DIR();
+    f_opendir(dir, "/");
+    while(f_readdir(dir, &file) == FR_OK && file.fname[0]) {
+        cout << file.fname << " " << file.fsize << endl;
+    }
+    f_closedir(dir);
+    cout << "Listing done!" << endl;
+
 
     // inky.led(InkyFrame::LED_ACTIVITY, 0);
 
