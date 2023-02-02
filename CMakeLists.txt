@@ -2,8 +2,11 @@ cmake_minimum_required(VERSION 3.12)
 
 set(NAME inky-frame-photo-gallery-cpp)
 
-include(pimoroni_pico_import.cmake)
+set(PICO_BOARD "pico_w")
+
+
 include(pico_sdk_import.cmake)
+include(pimoroni_pico_import.cmake)
 
 # Gooey boilerplate
 project(${NAME} C CXX ASM)
@@ -41,7 +44,20 @@ include(drivers/uc8159/uc8159)
 # )
 
 # target_link_libraries(${NAME} pico_stdlib jpegdec inky_frame fatfs hardware_pwm hardware_spi hardware_i2c hardware_rtc fatfs sdcard pico_graphics)
-target_link_libraries(${NAME} pico_stdlib   hardware_pwm hardware_spi hardware_i2c hardware_rtc   pico_graphics inky_frame )
+target_link_libraries(
+    ${NAME}
+    pico_stdlib
+    hardware_pwm
+    hardware_spi
+    hardware_i2c
+    hardware_rtc
+    pico_graphics
+    inky_frame
+    cyw43_driver_picow
+    pico_cyw43_arch_lwip_threadsafe_background
+    )
+
+target_include_directories(${NAME} PRIVATE ${CMAKE_CURRENT_LIST_DIR} )
 
 # enable usb output, disable uart output
 pico_enable_stdio_usb(inky-frame-photo-gallery-cpp 1)

@@ -6,6 +6,11 @@ using namespace pimoroni;
 
 #include "JPEGDEC.h"
 
+
+#include "pico/cyw43_arch.h"
+#include "lwip/pbuf.h"
+#include "lwip/tcp.h"
+
 InkyFrame inky;
 
 JPEGDEC jpeg;
