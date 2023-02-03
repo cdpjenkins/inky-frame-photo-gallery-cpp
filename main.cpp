@@ -130,6 +130,11 @@ int main() {
     }
     cout << "Connected!" << endl;
 
+    cout << "IP address: " << ip4addr_ntoa(netif_ip_addr4(netif_default)) << endl;
+    cout << "Netmask:    " << ip4addr_ntoa(netif_ip_netmask4(netif_default)) << endl;
+    cout << "Gateway:    " << ip4addr_ntoa(netif_ip_gw4(netif_default)) << endl;
+    cout << "Hostname:   " << netif_get_hostname(netif_default) << endl;
+
     cout << "Mounting SD card filesystem... ";
     FATFS fs;
     FRESULT fr = f_mount(&fs, "", 1);
