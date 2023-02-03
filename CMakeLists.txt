@@ -4,7 +4,6 @@ set(NAME inky-frame-photo-gallery-cpp)
 
 set(PICO_BOARD "pico_w")
 
-
 include(pico_sdk_import.cmake)
 include(pimoroni_pico_import.cmake)
 
@@ -35,13 +34,10 @@ include(drivers/sdcard/sdcard)
 include(drivers/pcf85063a/pcf85063a)
 include(drivers/uc8159/uc8159)
 
-# # Don't forget to link the libraries you need!
-# target_link_libraries(${NAME}
-#     # inky_frame INTERFACE
-#     pimoroni_i2c
-#     pico_explorer
-#     hardware_i2c pico_graphics hardware_spi hardware_pwm bitmap_fonts hershey_fonts pico_stdlib # sdcard fatfs pcf85063a uc8159 jpegdec
-# )
+# This will make CI build work but won't actually help it to run...
+if (NOT wifi_settings.h)
+    configure_file(wifi_settings_template.h wifi_settings.h COPYONLY)
+endif()
 
 # target_link_libraries(${NAME} pico_stdlib jpegdec inky_frame fatfs hardware_pwm hardware_spi hardware_i2c hardware_rtc fatfs sdcard pico_graphics)
 target_link_libraries(
