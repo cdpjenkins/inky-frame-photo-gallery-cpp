@@ -6,10 +6,11 @@ using namespace pimoroni;
 
 #include "JPEGDEC.h"
 
-
 #include "pico/cyw43_arch.h"
 #include "lwip/pbuf.h"
 #include "lwip/tcp.h"
+
+#include "wifi_settings.h"
 
 InkyFrame inky;
 
@@ -111,11 +112,25 @@ int main() {
         cout << i << endl;
         sleep_ms(10);
     }
+    
+    cout << "Setting up WiFI" << endl;
+    cout << "Initialising CYW43... ";
+    if (cyw43_arch_init_with_country(CYW43_COUNTRY_UK)) {
+        cout << "Failed to init CYW43" << endl;
+        return 1;
+    }
+    cout << "Done!" << endl;
 
-    cout << "initialising inky frame.. " << endl;
-    cout << "done!\n" << endl;
+    cyw43_arch_enable_sta_mode();
 
-    cout << "Mounting SD card filesystem.. " << endl;
+    cout << "Connecting to WiFi... ";
+    if (cyw43_arch_wifi_connect_blocking(WIFI_SSID, WIFI_PASSWORD, CYW43_AUTH_WPA2_MIXED_PSK)) {
+        cout << "Failed to connect to WiFi!" << endl;
+        return 2;
+    }
+    cout << "Connected!" << endl;
+
+    cout << "Mounting SD card filesystem... ";
     FATFS fs;
     FRESULT fr = f_mount(&fs, "", 1);
     if (fr != FR_OK) {
@@ -145,6 +160,9 @@ int main() {
         f_closedir(dir);
         cout << "Listing done!" << endl;
     }
+
+    // Possibly isn't much point doing this, given that this line will never be reached...
+    cyw43_arch_deinit();
 
     // inky.led(InkyFrame::LED_ACTIVITY, 0);
 
