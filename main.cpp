@@ -1,4 +1,6 @@
 #include <iostream>
+#include <sstream>
+#include <vector>
 using namespace std;
 
 #include "libraries/inky_frame/inky_frame.hpp"
@@ -149,35 +151,53 @@ int main() {
     HttpRequest request;
     request.do_request();
 
-    string file_list{request.get_content()};
-
-    cout << "Here is the list:" << endl;
-    cout << file_list;
+    cout << "Here comes the list!" << endl;
+    std::stringstream file_list{request.get_content()};
+    vector<string> files;
+    string line;
+    while (getline(file_list, line, '\n')) {
+        cout << line << endl;
+        files.push_back(line);
+    }
+    cout << "End of list!" << endl;
 
     while (true) {
-        cout << "Listing sd card contents.." << endl;
-        FILINFO file;
-        auto dir = new DIR();
-        f_opendir(dir, "/");
-        while(f_readdir(dir, &file) == FR_OK && file.fname[0]) {
-            cout << file.fname << " " << file.fsize << endl;
-
-            cout << "Drawing JPEG..." << endl;
+        for (const auto &item: files) {
+            cout << "Drawing JPEG: " << item << "... " << endl;
             inky.clear();
-            draw_jpeg(file.fname, 0, 0, 600, 448);
-            cout << "JPEG done" << endl;
+            draw_jpeg(item, 0, 0, 600, 448);
+            cout << "Done drawing JPEG" << endl;
 
-            cout << "Updating screen..." << endl;
+            cout << "Updating screen... ";
             inky.update();
-            cout << "Updated screen" << endl << endl;
+            cout << "Done." << endl << endl;
             sleep_ms(600000);
         }
-        f_closedir(dir);
         cout << "Listing done!" << endl;
     }
 
     // Possibly isn't much point doing this, given that this line will never be reached...
     cyw43_arch_deinit();
-
 }
 
+void display_images_by_listing_directory() {
+    cout << "Listing sd card contents.." << endl;
+    FILINFO file;
+    auto dir = new DIR();
+    f_opendir(dir, "/");
+    while(f_readdir(dir, &file) == FR_OK && file.fname[0]) {
+        cout << file.fname << " " << file.fsize << endl;
+
+        cout << "Drawing JPEG..." << endl;
+        inky.clear();
+        draw_jpeg(file.fname, 0, 0, 600, 448);
+        cout << "JPEG done" << endl;
+
+        cout << "Updating screen..." << endl;
+        inky.update();
+        cout << "Updated screen" << endl << endl;
+        sleep_ms(600000);
+    }
+    f_closedir(dir);
+    cout << "Listing done!" << endl;
+}
