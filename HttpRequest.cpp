@@ -12,6 +12,8 @@
 
 bool global_http_thang_done = false;
 
+HttpRequest global_http_request;
+
 void do_http_request() {
 
     cyw43_arch_lwip_begin();
@@ -29,7 +31,7 @@ void do_http_request() {
                               "/list.txt",
                               &settings,
                               http_body,
-                              nullptr,
+                              &global_http_request,
                               nullptr);
     std::cout << "Called httpc_get_file(), returned " << (int)err << std::endl;
     cyw43_arch_lwip_end();
@@ -44,10 +46,21 @@ void do_http_request() {
     }
 }
 
-void http_result(void *arg, httpc_result_t httpc_result, u32_t rx_content_len, u32_t srv_res, err_t err) {
+void http_result(void *arg,
+                 httpc_result_t httpc_result,
+                 u32_t rx_content_len,
+                 u32_t srv_res,
+                 err_t err) {
+
     std::cout << "Transfer complete" << std::endl;
     std::cout << "Local result: " << httpc_result << std::endl;
     std::cout << "HTTP result: " << srv_res << std::endl;
+
+    if (arg != & global_http_request) {
+        std::cout << "Uh oh!!!1" << std::endl;
+
+        std::cout << arg << std::endl;
+    }
 
     global_http_thang_done = true;
 }
@@ -60,6 +73,12 @@ err_t http_headers(httpc_state_t *connection,
     std::cout << "Headers received" << std::endl;
     std::cout << "Content length: " << content_len << std::endl;
 
+    if (arg != & global_http_request) {
+        std::cout << "Uh oh!!!1" << std::endl;
+
+        std::cout << arg << std::endl;
+    }
+
     return ERR_OK;
 }
 
@@ -71,6 +90,12 @@ err_t http_body(void *arg, struct tcp_pcb *conn, struct pbuf *p, err_t err) {
     std::cout << bytes_copied << " bytes copied" << std::endl;
     myBuff[bytes_copied] = 0;
     std::cout << myBuff << std::endl;
+
+    if (arg != & global_http_request) {
+        std::cout << "Uh oh!!!1" << std::endl;
+
+        std::cout << arg << std::endl;
+    }
 
     return ERR_OK;
 }
