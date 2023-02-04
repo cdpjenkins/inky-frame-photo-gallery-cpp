@@ -10,8 +10,6 @@
 #include <iostream>
 #include "HttpRequest.hpp"
 
-bool global_http_thang_done = false;
-
 void http_result_callback(void *arg,
                           httpc_result_t httpc_result,
                           u32_t rx_content_len,
@@ -42,7 +40,7 @@ void HttpRequest::http_result_received(httpc_result_t httpc_result, u32_t rx_con
     std::cout << "Local result: " << httpc_result << std::endl;
     std::cout << "HTTP result: " << srv_res << std::endl;
 
-    global_http_thang_done = true;
+    completed = true;
 }
 
 err_t HttpRequest::http_headers_received(httpc_state_t *connection, pbuf *hdr, u16_t hdr_len, u32_t content_len) {
@@ -69,7 +67,7 @@ err_t HttpRequest::http_body_received(tcp_pcb *conn, pbuf *p, err_t err) {
 void HttpRequest::do_request() {
     cyw43_arch_lwip_begin();
     std::cout << "Doing HTTP request... ";
-    global_http_thang_done = false;
+    completed = false;
     httpc_connection_t settings;
     settings.result_fn = http_result_callback;
     settings.headers_done_fn = http_headers_callback;
@@ -90,10 +88,9 @@ void HttpRequest::do_request() {
     bool http_thang_done = false;
     while (!http_thang_done) {
         cyw43_arch_lwip_begin();
-        if (global_http_thang_done) {
+        if (completed) {
             http_thang_done = true;
         }
         cyw43_arch_lwip_end();
     }
-
 }

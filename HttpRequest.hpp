@@ -11,6 +11,10 @@ public:
     err_t http_body_received(tcp_pcb *conn, pbuf *p, err_t err);
 
     void do_request();
+
+private:
+    // Not sure if volatile is enough or if there are more powerful synchronisation primatives that need to be used here
+    volatile bool completed = false;
 };
 
 
