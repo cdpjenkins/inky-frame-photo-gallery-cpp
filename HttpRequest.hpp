@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+static const size_t BUFFER_CAPACITY = 8192;
+
 class HttpRequest {
 
 public:
@@ -15,9 +17,13 @@ public:
 
     void do_request();
 
+    char *get_content();
+
 private:
     // Not sure if volatile is enough or if there are more powerful synchronisation primatives that need to be used here
     volatile bool completed = false;
+    char buffer[BUFFER_CAPACITY];
+    size_t size = 0;
 };
 
 

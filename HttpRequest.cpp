@@ -52,14 +52,18 @@ err_t HttpRequest::http_headers_received(httpc_state_t *connection, pbuf *hdr, u
 
 err_t HttpRequest::http_body_received(tcp_pcb *conn, pbuf *p, err_t err) {
 
-    // TODO - the sooner this goes away the better
-    char myBuff[4096];
+    size_t new_size = size + p->tot_len;
+    if (new_size >= sizeof(buffer)) {
+        std::cout << "Oh oh, we've exhausted the size of the buffer!" << std::endl;
+        return ERR_MEM;
+    }
 
-    std::cout << "Body:" << std::endl;
-    u16_t bytes_copied = pbuf_copy_partial(p, myBuff, p->tot_len, 0);
+
+    u16_t bytes_copied = pbuf_copy_partial(p, &buffer[size], p->tot_len, 0);
+    size = new_size;
+    buffer[new_size] = 0;
     std::cout << bytes_copied << " bytes copied" << std::endl;
-    myBuff[bytes_copied] = 0;
-    std::cout << myBuff << std::endl;
+    std::cout << "Size is now: " << size << std::endl;
 
     return ERR_OK;
 }
@@ -93,4 +97,8 @@ void HttpRequest::do_request() {
         }
         cyw43_arch_lwip_end();
     }
+}
+
+char *HttpRequest::get_content() {
+    return buffer;
 }

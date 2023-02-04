@@ -149,6 +149,11 @@ int main() {
     HttpRequest request;
     request.do_request();
 
+    string file_list{request.get_content()};
+
+    cout << "Here is the list:" << endl;
+    cout << file_list;
+
     while (true) {
         cout << "Listing sd card contents.." << endl;
         FILINFO file;
