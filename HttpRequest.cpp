@@ -12,13 +12,6 @@
 
 bool global_http_thang_done = false;
 
-HttpRequest global_http_request;
-
-void do_http_request() {
-    global_http_request.do_request();
-
-}
-
 void http_result_callback(void *arg,
                           httpc_result_t httpc_result,
                           u32_t rx_content_len,
@@ -89,7 +82,7 @@ void HttpRequest::do_request() {
                                "/list.txt",
                                &settings,
                                http_body_callback,
-                               &global_http_request,
+                               this,
                                nullptr);
     std::cout << "Called httpc_get_file(), returned " << (int)err << std::endl;
     cyw43_arch_lwip_end();

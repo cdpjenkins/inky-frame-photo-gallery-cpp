@@ -146,7 +146,8 @@ int main() {
     }
     cout << "Filesystem mounted!" << endl;
 
-    global_http_request.do_request();
+    HttpRequest request;
+    request.do_request();
 
     while (true) {
         cout << "Listing sd card contents.." << endl;
