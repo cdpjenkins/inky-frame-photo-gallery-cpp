@@ -15,6 +15,7 @@ bool global_http_thang_done = false;
 HttpRequest global_http_request;
 
 void do_http_request() {
+    global_http_request.do_request();
 
     cyw43_arch_lwip_begin();
     std::cout << "Doing HTTP request... ";
@@ -98,4 +99,8 @@ err_t HttpRequest::http_body_received(tcp_pcb *conn, pbuf *p, err_t err) {
     std::cout << myBuff << std::endl;
 
     return ERR_OK;
+}
+
+void HttpRequest::do_request() {
+
 }

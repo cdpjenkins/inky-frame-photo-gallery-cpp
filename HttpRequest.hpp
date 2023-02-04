@@ -10,6 +10,8 @@ public:
     err_t http_headers_received(httpc_state_t *connection, pbuf *hdr, u16_t hdr_len, u32_t content_len);
 
     err_t http_body_received(tcp_pcb *conn, pbuf *p, err_t err);
+
+    void do_request();
 };
 
 
