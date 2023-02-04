@@ -4,16 +4,18 @@
 
 class HttpRequest {
 
+public:
+    void http_result_received(httpc_result_t httpc_result, u32_t rx_content_len, u32_t srv_res, err_t err);
 };
 
 
 void do_http_request();
 
-void http_result(void *arg,
-                 httpc_result_t httpc_result,
-                 u32_t rx_content_len,
-                 u32_t srv_res,
-                 err_t err
+void http_result_callback(void *arg,
+                          httpc_result_t httpc_result,
+                          u32_t rx_content_len,
+                          u32_t srv_res,
+                          err_t err
 );
 
 err_t http_headers(httpc_state_t *connection,

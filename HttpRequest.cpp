@@ -20,7 +20,7 @@ void do_http_request() {
     std::cout << "Doing HTTP request... ";
     global_http_thang_done = false;
     httpc_connection_t settings;
-    settings.result_fn = http_result;
+    settings.result_fn = http_result_callback;
     settings.headers_done_fn = http_headers;
 
     ip_addr_t server_addr;
@@ -46,23 +46,15 @@ void do_http_request() {
     }
 }
 
-void http_result(void *arg,
-                 httpc_result_t httpc_result,
-                 u32_t rx_content_len,
-                 u32_t srv_res,
-                 err_t err) {
+void http_result_callback(void *arg,
+                          httpc_result_t httpc_result,
+                          u32_t rx_content_len,
+                          u32_t srv_res,
+                          err_t err) {
 
-    std::cout << "Transfer complete" << std::endl;
-    std::cout << "Local result: " << httpc_result << std::endl;
-    std::cout << "HTTP result: " << srv_res << std::endl;
+    HttpRequest *this_request = reinterpret_cast<HttpRequest*>(arg);
 
-    if (arg != & global_http_request) {
-        std::cout << "Uh oh!!!1" << std::endl;
-
-        std::cout << arg << std::endl;
-    }
-
-    global_http_thang_done = true;
+    this_request->http_result_received(httpc_result, rx_content_len, srv_res, err);
 }
 
 err_t http_headers(httpc_state_t *connection,
@@ -98,4 +90,12 @@ err_t http_body(void *arg, struct tcp_pcb *conn, struct pbuf *p, err_t err) {
     }
 
     return ERR_OK;
+}
+
+void HttpRequest::http_result_received(httpc_result_t httpc_result, u32_t rx_content_len, u32_t srv_res, err_t err) {
+    std::cout << "Transfer complete" << std::endl;
+    std::cout << "Local result: " << httpc_result << std::endl;
+    std::cout << "HTTP result: " << srv_res << std::endl;
+
+    global_http_thang_done = true;
 }
