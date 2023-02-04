@@ -27,12 +27,12 @@ void do_http_request() {
     ip4_addr_set_u32(&server_addr, ipaddr_addr("192.168.1.51"));
 
     err_t err = httpc_get_file(&server_addr,
-                              8000,
-                              "/list.txt",
-                              &settings,
-                              http_body,
-                              &global_http_request,
-                              nullptr);
+                               8000,
+                               "/list.txt",
+                               &settings,
+                               http_body_callback,
+                               &global_http_request,
+                               nullptr);
     std::cout << "Called httpc_get_file(), returned " << (int)err << std::endl;
     cyw43_arch_lwip_end();
 
@@ -63,26 +63,12 @@ err_t http_headers_callback(httpc_state_t *connection,
                             u16_t hdr_len,
                             u32_t content_len) {
     HttpRequest *this_request = reinterpret_cast<HttpRequest*>(arg);
-
     return this_request->http_headers_received(connection, hdr, hdr_len, content_len);
 }
 
-err_t http_body(void *arg, struct tcp_pcb *conn, struct pbuf *p, err_t err) {
-    char myBuff[4096];
-
-    std::cout << "Body:" << std::endl;
-    u16_t bytes_copied = pbuf_copy_partial(p, myBuff, p->tot_len, 0);
-    std::cout << bytes_copied << " bytes copied" << std::endl;
-    myBuff[bytes_copied] = 0;
-    std::cout << myBuff << std::endl;
-
-    if (arg != & global_http_request) {
-        std::cout << "Uh oh!!!1" << std::endl;
-
-        std::cout << arg << std::endl;
-    }
-
-    return ERR_OK;
+err_t http_body_callback(void *arg, struct tcp_pcb *conn, struct pbuf *p, err_t err) {
+    HttpRequest *this_request = reinterpret_cast<HttpRequest*>(arg);
+    return this_request->http_body_received(conn, p, err);
 }
 
 void HttpRequest::http_result_received(httpc_result_t httpc_result, u32_t rx_content_len, u32_t srv_res, err_t err) {
@@ -96,6 +82,20 @@ void HttpRequest::http_result_received(httpc_result_t httpc_result, u32_t rx_con
 err_t HttpRequest::http_headers_received(httpc_state_t *connection, pbuf *hdr, u16_t hdr_len, u32_t content_len) {
     std::cout << "Headers received" << std::endl;
     std::cout << "Content length: " << content_len << std::endl;
+
+    return ERR_OK;
+}
+
+err_t HttpRequest::http_body_received(tcp_pcb *conn, pbuf *p, err_t err) {
+
+    // TODO - the sooner this goes away the better
+    char myBuff[4096];
+
+    std::cout << "Body:" << std::endl;
+    u16_t bytes_copied = pbuf_copy_partial(p, myBuff, p->tot_len, 0);
+    std::cout << bytes_copied << " bytes copied" << std::endl;
+    myBuff[bytes_copied] = 0;
+    std::cout << myBuff << std::endl;
 
     return ERR_OK;
 }
