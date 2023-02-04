@@ -164,6 +164,7 @@ int main() {
     while (true) {
         for (const auto &item: files) {
             cout << "Drawing JPEG: " << item << "... " << endl;
+            inky.set_pen(0);
             inky.clear();
             draw_jpeg(item, 0, 0, 600, 448);
             cout << "Done drawing JPEG" << endl;
