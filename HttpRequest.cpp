@@ -21,7 +21,7 @@ void do_http_request() {
     global_http_thang_done = false;
     httpc_connection_t settings;
     settings.result_fn = http_result_callback;
-    settings.headers_done_fn = http_headers;
+    settings.headers_done_fn = http_headers_callback;
 
     ip_addr_t server_addr;
     ip4_addr_set_u32(&server_addr, ipaddr_addr("192.168.1.51"));
@@ -57,21 +57,14 @@ void http_result_callback(void *arg,
     this_request->http_result_received(httpc_result, rx_content_len, srv_res, err);
 }
 
-err_t http_headers(httpc_state_t *connection,
-                   void *arg,
-                   struct pbuf *hdr,
-                   u16_t hdr_len,
-                   u32_t content_len) {
-    std::cout << "Headers received" << std::endl;
-    std::cout << "Content length: " << content_len << std::endl;
+err_t http_headers_callback(httpc_state_t *connection,
+                            void *arg,
+                            struct pbuf *hdr,
+                            u16_t hdr_len,
+                            u32_t content_len) {
+    HttpRequest *this_request = reinterpret_cast<HttpRequest*>(arg);
 
-    if (arg != & global_http_request) {
-        std::cout << "Uh oh!!!1" << std::endl;
-
-        std::cout << arg << std::endl;
-    }
-
-    return ERR_OK;
+    return this_request->http_headers_received(connection, hdr, hdr_len, content_len);
 }
 
 err_t http_body(void *arg, struct tcp_pcb *conn, struct pbuf *p, err_t err) {
@@ -98,4 +91,11 @@ void HttpRequest::http_result_received(httpc_result_t httpc_result, u32_t rx_con
     std::cout << "HTTP result: " << srv_res << std::endl;
 
     global_http_thang_done = true;
+}
+
+err_t HttpRequest::http_headers_received(httpc_state_t *connection, pbuf *hdr, u16_t hdr_len, u32_t content_len) {
+    std::cout << "Headers received" << std::endl;
+    std::cout << "Content length: " << content_len << std::endl;
+
+    return ERR_OK;
 }
