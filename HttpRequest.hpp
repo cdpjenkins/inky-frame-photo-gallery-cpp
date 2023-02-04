@@ -1,7 +1,6 @@
 #ifndef INKY_FRAME_PHOTO_GALLERY_CPP_HTTPREQUEST_HPP
 #define INKY_FRAME_PHOTO_GALLERY_CPP_HTTPREQUEST_HPP
 
-
 class HttpRequest {
 
 public:
@@ -36,7 +35,6 @@ err_t http_body_callback(void *arg,
                          struct pbuf *p,
                          err_t err);
 
-
-
+extern HttpRequest global_http_request;
 
 #endif //INKY_FRAME_PHOTO_GALLERY_CPP_HTTPREQUEST_HPP

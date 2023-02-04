@@ -17,34 +17,6 @@ HttpRequest global_http_request;
 void do_http_request() {
     global_http_request.do_request();
 
-    cyw43_arch_lwip_begin();
-    std::cout << "Doing HTTP request... ";
-    global_http_thang_done = false;
-    httpc_connection_t settings;
-    settings.result_fn = http_result_callback;
-    settings.headers_done_fn = http_headers_callback;
-
-    ip_addr_t server_addr;
-    ip4_addr_set_u32(&server_addr, ipaddr_addr("192.168.1.51"));
-
-    err_t err = httpc_get_file(&server_addr,
-                               8000,
-                               "/list.txt",
-                               &settings,
-                               http_body_callback,
-                               &global_http_request,
-                               nullptr);
-    std::cout << "Called httpc_get_file(), returned " << (int)err << std::endl;
-    cyw43_arch_lwip_end();
-
-    bool http_thang_done = false;
-    while (!http_thang_done) {
-      cyw43_arch_lwip_begin();
-      if (global_http_thang_done) {
-        http_thang_done = true;
-      }
-      cyw43_arch_lwip_end();
-    }
 }
 
 void http_result_callback(void *arg,
@@ -102,5 +74,33 @@ err_t HttpRequest::http_body_received(tcp_pcb *conn, pbuf *p, err_t err) {
 }
 
 void HttpRequest::do_request() {
+    cyw43_arch_lwip_begin();
+    std::cout << "Doing HTTP request... ";
+    global_http_thang_done = false;
+    httpc_connection_t settings;
+    settings.result_fn = http_result_callback;
+    settings.headers_done_fn = http_headers_callback;
+
+    ip_addr_t server_addr;
+    ip4_addr_set_u32(&server_addr, ipaddr_addr("192.168.1.51"));
+
+    err_t err = httpc_get_file(&server_addr,
+                               8000,
+                               "/list.txt",
+                               &settings,
+                               http_body_callback,
+                               &global_http_request,
+                               nullptr);
+    std::cout << "Called httpc_get_file(), returned " << (int)err << std::endl;
+    cyw43_arch_lwip_end();
+
+    bool http_thang_done = false;
+    while (!http_thang_done) {
+        cyw43_arch_lwip_begin();
+        if (global_http_thang_done) {
+            http_thang_done = true;
+        }
+        cyw43_arch_lwip_end();
+    }
 
 }
