@@ -1,2 +1,4 @@
 build/*
+.idea
+cmake-build-debug-arm-none-eabi-gcc
 wifi_settings.h
