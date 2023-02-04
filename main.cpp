@@ -9,6 +9,7 @@ using namespace pimoroni;
 #include "pico/cyw43_arch.h"
 #include "lwip/pbuf.h"
 #include "lwip/tcp.h"
+#include "lwip/apps/http_client.h"
 
 #include "wifi_settings.h"
 
@@ -18,6 +19,8 @@ JPEGDEC jpeg;
 struct {
   int x, y, w, h;
 } jpeg_decode_options;
+
+bool global_http_thang_done = false;
 
 void *jpegdec_open_callback(const char *filename, int32_t *size) {
     FIL *fil = new FIL;
@@ -98,6 +101,46 @@ void draw_jpeg(std::string filename, int x, int y, int w, int h) {
     jpeg.close();
 }
 
+void http_result(void *arg,
+                  httpc_result_t httpc_result,
+                  u32_t rx_content_len,
+                  u32_t srv_res,
+                  err_t err
+) {
+  cout << "Transfer complete" << endl;
+  cout << "Local result: " << httpc_result << endl;
+  cout << "HTTP result: " << srv_res << endl;
+
+  global_http_thang_done = true;
+}
+
+err_t http_headers(httpc_state_t *connection,
+              void *arg,
+              struct pbuf *hdr,
+              u16_t hdr_len,
+              u32_t content_len
+) {
+  cout << "Headers received" << endl;
+  cout << "Content length: " << content_len << endl;
+
+  return ERR_OK;
+}
+
+err_t http_body(void *arg,
+            struct altcp_pcb *conn,
+            struct pbuf *p,
+            err_t err) {
+  char myBuff[4096];
+
+  cout << "Body:" << endl;
+  u16_t bytes_copied = pbuf_copy_partial(p, myBuff, p->tot_len, 0);
+  cout << bytes_copied << " bytes copied" << endl;
+  myBuff[bytes_copied] = 0;
+  cout << myBuff << endl;
+
+  return ERR_OK;
+}
+
 int main() {
     // TODOs
     // - Do something with the LEDs
@@ -139,10 +182,39 @@ int main() {
     FATFS fs;
     FRESULT fr = f_mount(&fs, "", 1);
     if (fr != FR_OK) {
-        cout << "Failed to mount SD card filesystem, error: " << fr << endl;
-        return 0;
+      cout << "Failed to mount SD card filesystem, error: " << fr << endl;
+      return 0;
     }
     cout << "Filesystem mounted!" << endl;
+
+    cyw43_arch_lwip_begin();
+    cout << "Doing HTTP request... ";
+    global_http_thang_done = false;
+    httpc_connection_t settings;
+    settings.result_fn = http_result;
+    settings.headers_done_fn = http_headers;
+
+    ip_addr_t server_addr;
+    ip4_addr_set_u32(&server_addr, ipaddr_addr("192.168.1.51"));
+
+    err_t err = httpc_get_file(&server_addr,
+                              8000,
+                              "/list.txt",
+                              &settings,
+                              http_body,
+                              nullptr,
+                              nullptr);
+    cyw43_arch_lwip_end();
+
+    bool http_thang_done = false;
+    while (!http_thang_done) {
+      cyw43_arch_lwip_begin();
+      if (global_http_thang_done) {
+        http_thang_done = true;
+      }
+      cyw43_arch_lwip_end();
+    }
+
 
     while (true) {
         cout << "Listing sd card contents.." << endl;
@@ -168,10 +240,5 @@ int main() {
 
     // Possibly isn't much point doing this, given that this line will never be reached...
     cyw43_arch_deinit();
-
-    // inky.led(InkyFrame::LED_ACTIVITY, 0);
-
-    // inky.led(InkyFrame::LED_CONNECTION, 0);
-
 
 }
