@@ -9,6 +9,8 @@ static const size_t BUFFER_CAPACITY = 8192;
 class HttpConnection {
 
 public:
+    HttpConnection(const char *ip_address, int port, const char *path);
+
     void http_result_received(httpc_result_t httpc_result, u32_t rx_content_len, u32_t srv_res, err_t err);
     err_t http_headers_received(httpc_state_t *connection, pbuf *hdr, u16_t hdr_len, u32_t content_len);
     err_t http_body_received(tcp_pcb *conn, pbuf *p, err_t err);
@@ -16,6 +18,10 @@ public:
     char *get_content();
 
 private:
+    const char *ip_address;
+    int port;
+    const char *path;
+
     // Not sure if volatile is enough or if there are more powerful synchronisation primatives that need to be used here
     volatile bool completed = false;
     char buffer[BUFFER_CAPACITY];

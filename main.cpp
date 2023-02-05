@@ -148,7 +148,7 @@ int main() {
     }
     cout << "Filesystem mounted!" << endl;
 
-    HttpConnection connection;
+    HttpConnection connection("192.168.1.51", 8000, "/list.txt");
     connection.do_request();
     vector<string> files = split_by_newlines(connection.get_content());
 
@@ -177,7 +177,6 @@ vector<string> split_by_newlines(char *content) {
     vector<string> files;
     string line;
     while (getline(file_list, line, '\n')) {
-        cout << line << endl;
         files.push_back(line);
     }
     return files;

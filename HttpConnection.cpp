@@ -73,11 +73,11 @@ void HttpConnection::do_request() {
     settings.headers_done_fn = http_headers_callback;
 
     ip_addr_t server_addr;
-    ip4_addr_set_u32(&server_addr, ipaddr_addr("192.168.1.51"));
+    ip4_addr_set_u32(&server_addr, ipaddr_addr(ip_address));
 
     err_t err = httpc_get_file(&server_addr,
-                               8000,
-                               "/list.txt",
+                               port,
+                               path,
                                &settings,
                                http_body_callback,
                                this,
@@ -97,4 +97,11 @@ void HttpConnection::do_request() {
 
 char *HttpConnection::get_content() {
     return buffer;
+}
+
+HttpConnection::HttpConnection(const char *ip_address, int port, const char *path)
+        : ip_address(ip_address),
+            port(port),
+            path(path) {
+
 }
