@@ -23,6 +23,8 @@ struct {
   int x, y, w, h;
 } jpeg_decode_options;
 
+vector<string> split_by_newlines(char *content);
+
 void *jpegdec_open_callback(const char *filename, int32_t *size) {
     FIL *fil = new FIL;
     if (f_open(fil, filename, FA_READ)) { return nullptr; }
@@ -151,15 +153,7 @@ int main() {
     HttpRequest request;
     request.do_request();
 
-    cout << "Here comes the list!" << endl;
-    std::stringstream file_list{request.get_content()};
-    vector<string> files;
-    string line;
-    while (getline(file_list, line, '\n')) {
-        cout << line << endl;
-        files.push_back(line);
-    }
-    cout << "End of list!" << endl;
+    vector<string> files = split_by_newlines(request.get_content());
 
     while (true) {
         for (const auto &item: files) {
@@ -179,6 +173,17 @@ int main() {
 
     // Possibly isn't much point doing this, given that this line will never be reached...
     cyw43_arch_deinit();
+}
+
+vector<string> split_by_newlines(char *content) {
+    stringstream file_list{content};
+    vector<string> files;
+    string line;
+    while (getline(file_list, line, '\n')) {
+        cout << line << endl;
+        files.push_back(line);
+    }
+    return files;
 }
 
 void display_images_by_listing_directory() {
