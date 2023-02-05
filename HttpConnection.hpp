@@ -7,7 +7,7 @@
 static const size_t BUFFER_CAPACITY = 8192;
 
 const size_t IP_V4_MAX_LENGTH = 20;     // longer than needed but meh
-const size_t PATH_MAX_LENGTH = PATH_MAX;
+const size_t PATH_MAX_LENGTH = 128;
 
 class HttpConnection {
 
