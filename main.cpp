@@ -9,12 +9,11 @@ using namespace pimoroni;
 #include "JPEGDEC.h"
 
 #include "pico/cyw43_arch.h"
-#include "lwip/pbuf.h"
 #include "lwip/tcp.h"
 #include "lwip/apps/http_client.h"
 
 #include "wifi_settings.h"
-#include "HttpRequest.hpp"
+#include "HttpConnection.hpp"
 
 InkyFrame inky;
 
@@ -108,7 +107,6 @@ int main() {
     // TODOs
     // - Do something with the LEDs
     // - Use wifi to download pics
-    // - Figure out how not to stretch the JPEG if it's not precisely 600x448
     inky.init();
 
     stdio_init_all();
@@ -150,10 +148,9 @@ int main() {
     }
     cout << "Filesystem mounted!" << endl;
 
-    HttpRequest request;
-    request.do_request();
-
-    vector<string> files = split_by_newlines(request.get_content());
+    HttpConnection connection;
+    connection.do_request();
+    vector<string> files = split_by_newlines(connection.get_content());
 
     while (true) {
         for (const auto &item: files) {

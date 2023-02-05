@@ -18,7 +18,7 @@ pico_sdk_init()
 # Add your source files
 add_executable(${NAME}
         main.cpp
-        HttpRequest.cpp)
+        HttpConnection.cpp)
 
 # Include required libraries
 # This assumes `pimoroni-pico` is stored alongside your project

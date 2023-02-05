@@ -1,14 +1,10 @@
-//
-// Created by Chris Jenkins on 04/02/2023.
-//
-
 #include "lwip/apps/http_client.h"
 #include "lwip/tcp.h"
 #include "lwip/pbuf.h"
 #include "pico/cyw43_arch.h"
 #include "libraries/inky_frame/inky_frame.hpp"
 #include <iostream>
-#include "HttpRequest.hpp"
+#include "HttpConnection.hpp"
 
 void http_result_callback(void *arg,
                           httpc_result_t httpc_result,
@@ -16,7 +12,7 @@ void http_result_callback(void *arg,
                           u32_t srv_res,
                           err_t err) {
 
-    HttpRequest *this_request = reinterpret_cast<HttpRequest*>(arg);
+    HttpConnection *this_request = reinterpret_cast<HttpConnection*>(arg);
 
     this_request->http_result_received(httpc_result, rx_content_len, srv_res, err);
 }
@@ -26,16 +22,16 @@ err_t http_headers_callback(httpc_state_t *connection,
                             struct pbuf *hdr,
                             u16_t hdr_len,
                             u32_t content_len) {
-    HttpRequest *this_request = reinterpret_cast<HttpRequest*>(arg);
+    HttpConnection *this_request = reinterpret_cast<HttpConnection*>(arg);
     return this_request->http_headers_received(connection, hdr, hdr_len, content_len);
 }
 
 err_t http_body_callback(void *arg, struct tcp_pcb *conn, struct pbuf *p, err_t err) {
-    HttpRequest *this_request = reinterpret_cast<HttpRequest*>(arg);
+    HttpConnection *this_request = reinterpret_cast<HttpConnection*>(arg);
     return this_request->http_body_received(conn, p, err);
 }
 
-void HttpRequest::http_result_received(httpc_result_t httpc_result, u32_t rx_content_len, u32_t srv_res, err_t err) {
+void HttpConnection::http_result_received(httpc_result_t httpc_result, u32_t rx_content_len, u32_t srv_res, err_t err) {
     std::cout << "Transfer complete" << std::endl;
     std::cout << "Local result: " << httpc_result << std::endl;
     std::cout << "HTTP result: " << srv_res << std::endl;
@@ -43,14 +39,14 @@ void HttpRequest::http_result_received(httpc_result_t httpc_result, u32_t rx_con
     completed = true;
 }
 
-err_t HttpRequest::http_headers_received(httpc_state_t *connection, pbuf *hdr, u16_t hdr_len, u32_t content_len) {
+err_t HttpConnection::http_headers_received(httpc_state_t *connection, pbuf *hdr, u16_t hdr_len, u32_t content_len) {
     std::cout << "Headers received" << std::endl;
     std::cout << "Content length: " << content_len << std::endl;
 
     return ERR_OK;
 }
 
-err_t HttpRequest::http_body_received(tcp_pcb *conn, pbuf *p, err_t err) {
+err_t HttpConnection::http_body_received(tcp_pcb *conn, pbuf *p, err_t err) {
 
     size_t new_size = size + p->tot_len;
     if (new_size >= sizeof(buffer)) {
@@ -68,7 +64,7 @@ err_t HttpRequest::http_body_received(tcp_pcb *conn, pbuf *p, err_t err) {
     return ERR_OK;
 }
 
-void HttpRequest::do_request() {
+void HttpConnection::do_request() {
     cyw43_arch_lwip_begin();
     std::cout << "Doing HTTP request... ";
     completed = false;
@@ -99,6 +95,6 @@ void HttpRequest::do_request() {
     }
 }
 
-char *HttpRequest::get_content() {
+char *HttpConnection::get_content() {
     return buffer;
 }
