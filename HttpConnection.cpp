@@ -99,9 +99,26 @@ char *HttpConnection::get_content() {
     return buffer;
 }
 
-HttpConnection::HttpConnection(const char *ip_address, int port, const char *path)
-        : ip_address(ip_address),
-            port(port),
-            path(path) {
+HttpConnection::HttpConnection(const char *ip_address_param, int port, const char *path)
+        : port(port) {
+    // I'm not quite clear why we need to do all this. I'd rather just use std::strings but, for some reason, the HTTP
+    // call is not sent if we do use strings at this point. Or if we use define ip_address and path as char arrays in
+    // this class. Or if we don't explicitly add the '\0' to the end of the string (even though the length is
+    // significantly shorter than the max length...)
+    //
+    // So I reckon something screwy is going on with caches or interrupts or memory getting trampled somehow or...
+    // dunno. But it's seriously annoying and is making me think I should have just stuck with MicroPython!
 
+    this->ip_address = new char[IP_V4_MAX_LENGTH];
+    strlcpy(this->ip_address, ip_address_param, IP_V4_MAX_LENGTH - 1);
+    this->ip_address[IP_V4_MAX_LENGTH - 1] = '\0';
+
+    this->path = new char[PATH_MAX_LENGTH];
+    strlcpy(this->path, path, PATH_MAX_LENGTH - 1);
+    this->path[PATH_MAX_LENGTH - 1] = '\0';
+}
+
+HttpConnection::~HttpConnection() {
+    delete[] this->path;
+    delete[] this->ip_address;
 }

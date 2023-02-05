@@ -1,6 +1,7 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <cstring>
 using namespace std;
 
 #include "libraries/inky_frame/inky_frame.hpp"
