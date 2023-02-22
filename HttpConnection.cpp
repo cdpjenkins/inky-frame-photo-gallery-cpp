@@ -3,7 +3,9 @@
 #include "lwip/pbuf.h"
 #include "pico/cyw43_arch.h"
 #include "libraries/inky_frame/inky_frame.hpp"
+
 #include <iostream>
+
 #include "HttpConnection.hpp"
 
 void http_result_callback(void *arg,
@@ -60,7 +62,7 @@ err_t HttpConnection::http_body_received(tcp_pcb *conn, pbuf *p, err_t err) {
     std::cout << "Size is now: " << size << std::endl;
 
     UINT bw;
-    FRESULT res = f_write(file_handle, (const void*)&buffer[size], (UINT)p->tot_len, &bw);
+    FRESULT res = f_write(&file_handle, (const void*)&buffer[size], (UINT)p->tot_len, &bw);
     if (res || bw < p->tot_len) return ERR_ABRT; /* error or disk full */
 
     return ERR_OK;
@@ -101,7 +103,10 @@ char *HttpConnection::get_content() {
     return buffer;
 }
 
-HttpConnection::HttpConnection(const char *ip_address_param, int port, const char *path, FIL *file_handle)
+HttpConnection::HttpConnection(const char *ip_address_param,
+                               int port,
+                               const char *path,
+                               const char *filename)
         : port(port),
           file_handle(file_handle)
 {
@@ -120,9 +125,26 @@ HttpConnection::HttpConnection(const char *ip_address_param, int port, const cha
     this->path = new char[PATH_MAX_LENGTH];
     strlcpy(this->path, path, PATH_MAX_LENGTH - 1);
     this->path[PATH_MAX_LENGTH - 1] = '\0';
+
+    this->filename = new char[PATH_MAX_LENGTH];
+    strlcpy(this->filename, filename, PATH_MAX_LENGTH - 1);
+    this->filename[PATH_MAX_LENGTH - 1] = '\0';
+
+    std::cout << "About to create file handle" << std::endl;
+    std::cout << "About to open file" << std::endl;
+    if (f_open(&file_handle, filename, FA_CREATE_ALWAYS | FA_WRITE)) {
+        std::cout << "ERROR: failed to open " << filename << std::endl;
+        return;
+
+        // wish we could use exceptions...
+    }
+    std::cout << "File is open" << std::endl;
 }
 
 HttpConnection::~HttpConnection() {
+    delete[] this->filename;
     delete[] this->path;
     delete[] this->ip_address;
+
+    f_close(&file_handle);
 }
