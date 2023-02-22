@@ -34,16 +34,18 @@ err_t http_body_callback(void *arg, struct tcp_pcb *conn, struct pbuf *p, err_t 
 }
 
 void HttpConnection::http_result_received(httpc_result_t httpc_result, u32_t rx_content_len, u32_t srv_res, err_t err) {
-    std::cout << "Transfer complete" << std::endl;
-    std::cout << "Local result: " << httpc_result << std::endl;
-    std::cout << "HTTP result: " << srv_res << std::endl;
+//    std::cout << "Transfer complete" << std::endl;
+//    std::cout << "Local result: " << httpc_result << std::endl;
+//    std::cout << "HTTP result: " << srv_res << std::endl;
+
+    f_close(&file_handle);
 
     completed = true;
 }
 
 err_t HttpConnection::http_headers_received(httpc_state_t *connection, pbuf *hdr, u16_t hdr_len, u32_t content_len) {
-    std::cout << "Headers received" << std::endl;
-    std::cout << "Content length: " << content_len << std::endl;
+//    std::cout << "Headers received" << std::endl;
+//    std::cout << "Content length: " << content_len << std::endl;
 
     return ERR_OK;
 }
@@ -55,15 +57,22 @@ err_t HttpConnection::http_body_received(tcp_pcb *conn, pbuf *p, err_t err) {
         return ERR_MEM;
     }
 
-    u16_t bytes_copied = pbuf_copy_partial(p, &buffer[size], p->tot_len, 0);
+    pbuf_copy_partial(p, &buffer[size], p->tot_len, 0);
     size = new_size;
     buffer[new_size] = 0;
+//    std::cout << bytes_copied << " bytes copied" << std::endl;
+//    std::cout << "Size is now: " << size << std::endl;
+
+    char buff_ston[BUFFER_CAPACITY];
+    u16_t bytes_copied = pbuf_copy_partial(p, buff_ston, p->tot_len, 0);
     std::cout << bytes_copied << " bytes copied" << std::endl;
-    std::cout << "Size is now: " << size << std::endl;
+    buff_ston[bytes_copied] = '\0';
+
+    std::cout << buff_ston << std::endl;
 
     UINT bw;
-    FRESULT res = f_write(&file_handle, (const void*)&buffer[size], (UINT)p->tot_len, &bw);
-    if (res || bw < p->tot_len) return ERR_ABRT; /* error or disk full */
+    FRESULT res = f_write(&file_handle, (const void*)buff_ston, bytes_copied, &bw);
+    if (res || bw < bytes_copied) return ERR_ABRT; /* error or disk full */
 
     return ERR_OK;
 }
@@ -145,6 +154,4 @@ HttpConnection::~HttpConnection() {
     delete[] this->filename;
     delete[] this->path;
     delete[] this->ip_address;
-
-    f_close(&file_handle);
 }

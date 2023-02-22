@@ -159,11 +159,38 @@ int main() {
     f_closedir(dir);
     cout << "Listing done!" << endl;
 
-
     HttpConnection connection("192.168.1.51", 8000, "/list.txt", "/list.txt");
     connection.do_request();
-    vector<string> files = split_by_newlines(connection.get_content());
 
+    FIL list_file_handle;
+    if (f_open(&list_file_handle, "/list.txt", FA_OPEN_EXISTING | FA_READ)) {
+        cout << "Failed to open /list.txt for reading" << endl;
+        return 1;
+    }
+
+    FSIZE_t list_txt_size = f_size(&list_file_handle);
+    const FSIZE_t LIST_MAX_SIZE = (1 << 14) - 1;
+    cout << "Size of list.txt is " << list_txt_size << endl;
+    if (list_txt_size > LIST_MAX_SIZE) {
+        cout << "Size of list.txt is too large: " << list_txt_size << " bytes" << endl;
+        return 1;
+    }
+
+    char buffer[LIST_MAX_SIZE + 1];
+    UINT bytes_read;
+    FRESULT rc = f_read(&list_file_handle, buffer, list_txt_size, &bytes_read);
+    if (rc != FR_OK) {
+        cout << "Failed to read from list.txt: " << rc;
+    }
+    cout << "read " << bytes_read << " bytes" <<endl;
+    buffer[bytes_read] = '\0';
+
+    f_close(&list_file_handle);
+
+    cout << buffer << endl;
+
+    vector<string> files = split_by_newlines(buffer);
+    cout << strlen(buffer) << endl;
 
     while (true) {
         for (const auto &item: files) {
