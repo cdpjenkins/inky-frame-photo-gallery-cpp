@@ -145,13 +145,34 @@ int main() {
     FRESULT fr = f_mount(&fs, "", 1);
     if (fr != FR_OK) {
       cout << "Failed to mount SD card filesystem, error: " << fr << endl;
-      return 0;
+      return 1;
     }
     cout << "Filesystem mounted!" << endl;
 
-    HttpConnection connection("192.168.1.51", 8000, "/list.txt");
+    cout << "Listing sd card contents.." << endl;
+    FILINFO file;
+    auto dir = new DIR();
+    f_opendir(dir, "/");
+    while(f_readdir(dir, &file) == FR_OK && file.fname[0]) {
+        cout << file.fname << " " << file.fsize << endl;
+    }
+    f_closedir(dir);
+    cout << "Listing done!" << endl;
+
+    cout << "About to create file handle" << endl;
+    FIL fil;
+    cout << "About to open file" << endl;
+    if (f_open(&fil, "/list.txt", FA_CREATE_ALWAYS | FA_WRITE)) {
+        cout << "ERROR: failed to open list.txt" << endl;
+        return 1;
+    }
+    cout << "File is open" << endl;
+
+    HttpConnection connection("192.168.1.51", 8000, "/list.txt", &fil);
     connection.do_request();
     vector<string> files = split_by_newlines(connection.get_content());
+
+    f_close(&fil);
 
     while (true) {
         for (const auto &item: files) {

@@ -12,7 +12,7 @@ const size_t PATH_MAX_LENGTH = 128;
 class HttpConnection {
 
 public:
-    HttpConnection(const char *ip_address_param, int port, const char *path);
+    HttpConnection(const char *ip_address_param, int port, const char *path, FIL *file_handle);
 
     virtual ~HttpConnection();
 
@@ -26,6 +26,7 @@ private:
     char *ip_address;
     int port;
     char *path;
+    FIL *file_handle;
 
     // Not sure if volatile is enough or if there are more powerful synchronisation primatives that need to be used here
     volatile bool completed = false;

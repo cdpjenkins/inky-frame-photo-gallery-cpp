@@ -47,19 +47,21 @@ err_t HttpConnection::http_headers_received(httpc_state_t *connection, pbuf *hdr
 }
 
 err_t HttpConnection::http_body_received(tcp_pcb *conn, pbuf *p, err_t err) {
-
     size_t new_size = size + p->tot_len;
     if (new_size >= sizeof(buffer)) {
         std::cout << "Oh oh, we've exhausted the size of the buffer!" << std::endl;
         return ERR_MEM;
     }
 
-
     u16_t bytes_copied = pbuf_copy_partial(p, &buffer[size], p->tot_len, 0);
     size = new_size;
     buffer[new_size] = 0;
     std::cout << bytes_copied << " bytes copied" << std::endl;
     std::cout << "Size is now: " << size << std::endl;
+
+    UINT bw;
+    FRESULT res = f_write(file_handle, (const void*)&buffer[size], (UINT)p->tot_len, &bw);
+    if (res || bw < p->tot_len) return ERR_ABRT; /* error or disk full */
 
     return ERR_OK;
 }
@@ -99,8 +101,10 @@ char *HttpConnection::get_content() {
     return buffer;
 }
 
-HttpConnection::HttpConnection(const char *ip_address_param, int port, const char *path)
-        : port(port) {
+HttpConnection::HttpConnection(const char *ip_address_param, int port, const char *path, FIL *file_handle)
+        : port(port),
+          file_handle(file_handle)
+{
     // I'm not quite clear why we need to do all this. I'd rather just use std::strings but, for some reason, the HTTP
     // call is not sent if we do use strings at this point. Or if we use define ip_address and path as char arrays in
     // this class. Or if we don't explicitly add the '\0' to the end of the string (even though the length is
