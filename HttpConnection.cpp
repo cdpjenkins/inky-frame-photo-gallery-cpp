@@ -53,7 +53,6 @@ err_t HttpConnection::http_body_received(tcp_pcb *conn, pbuf *p, err_t err) {
 
     char buffer[BUFFER_CAPACITY];
     u16_t bytes_copied = pbuf_copy_partial(p, buffer, size, 0);
-    buffer[bytes_copied] = '\0';
 
     UINT bw;
     FRESULT res = f_write(&file_handle, (const void*)buffer, bytes_copied, &bw);

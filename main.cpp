@@ -23,7 +23,13 @@ struct {
   int x, y, w, h;
 } jpeg_decode_options;
 
-vector<string> split_by_newlines(char *content);
+vector<string> split_by_newlines(string &&content);
+
+basic_string<char> read_text_file(const char *file_path);
+
+void http_get_to_file(const char *ip_addres, int port, const char *path, const char *file_path);
+
+void filesystem_list(const char *path);
 
 void *jpegdec_open_callback(const char *filename, int32_t *size) {
     FIL *fil = new FIL;
@@ -149,48 +155,11 @@ int main() {
     }
     cout << "Filesystem mounted!" << endl;
 
-    cout << "Listing sd card contents.." << endl;
-    FILINFO file;
-    auto dir = new DIR();
-    f_opendir(dir, "/");
-    while(f_readdir(dir, &file) == FR_OK && file.fname[0]) {
-        cout << file.fname << " " << file.fsize << endl;
-    }
-    f_closedir(dir);
-    cout << "Listing done!" << endl;
+    filesystem_list("/");
 
-    HttpConnection connection("192.168.1.51", 8000, "/list.txt", "/list.txt");
-    connection.do_request();
+    http_get_to_file("192.168.1.51", 8000, "/list.txt", "/list.txt");
 
-    FIL list_file_handle;
-    if (f_open(&list_file_handle, "/list.txt", FA_OPEN_EXISTING | FA_READ)) {
-        cout << "Failed to open /list.txt for reading" << endl;
-        return 1;
-    }
-
-    FSIZE_t list_txt_size = f_size(&list_file_handle);
-    const FSIZE_t LIST_MAX_SIZE = (1 << 14) - 1;
-    cout << "Size of list.txt is " << list_txt_size << endl;
-    if (list_txt_size > LIST_MAX_SIZE) {
-        cout << "Size of list.txt is too large: " << list_txt_size << " bytes" << endl;
-        return 1;
-    }
-
-    char buffer[LIST_MAX_SIZE + 1];
-    UINT bytes_read;
-    FRESULT rc = f_read(&list_file_handle, buffer, list_txt_size, &bytes_read);
-    if (rc != FR_OK) {
-        cout << "Failed to read from list.txt: " << rc;
-    }
-    cout << "read " << bytes_read << " bytes" <<endl;
-    buffer[bytes_read] = '\0';
-
-    f_close(&list_file_handle);
-
-    cout << buffer << endl;
-
-    vector<string> files = split_by_newlines(buffer);
-    cout << strlen(buffer) << endl;
+    vector<string> files = split_by_newlines(read_text_file("/list.txt"));
 
     while (true) {
         for (const auto &item: files) {
@@ -212,7 +181,58 @@ int main() {
     cyw43_arch_deinit();
 }
 
-vector<string> split_by_newlines(char *content) {
+void filesystem_list(const char *path) {
+    cout << "Listing sd card contents.." << endl;
+    FILINFO file;
+    auto dir = new DIR();
+    f_opendir(dir, path);
+    while(f_readdir(dir, &file) == FR_OK && file.fname[0]) {
+        cout << file.fname << " " << file.fsize << endl;
+    }
+    f_closedir(dir);
+    cout << "Listing done!" << endl;
+}
+
+void http_get_to_file(const char *ip_addres, int port, const char *path, const char *file_path) {
+    HttpConnection connection(ip_addres, port, path, file_path);
+    connection.do_request();
+}
+
+basic_string<char> read_text_file(const char *file_path) {
+    const FSIZE_t LIST_MAX_SIZE = (1 << 14) - 1;
+
+    char buffer[LIST_MAX_SIZE + 1];
+
+    FIL list_file_handle;
+    if (f_open(&list_file_handle, file_path, FA_OPEN_EXISTING | FA_READ)) {
+        cout << "Failed to open /list.txt for reading" << endl;
+        // need... exceptions... here
+//        return 1;
+    }
+
+    FSIZE_t list_txt_size = f_size(&list_file_handle);
+    cout << "Size of list.txt is " << list_txt_size << endl;
+    if (list_txt_size > LIST_MAX_SIZE) {
+        cout << "Size of list.txt is too large: " << list_txt_size << " bytes" << endl;
+        // need... exceptions... here
+//        return 1;
+    }
+
+    UINT bytes_read;
+    FRESULT rc = f_read(&list_file_handle, buffer, list_txt_size, &bytes_read);
+    if (rc != FR_OK) {
+        cout << "Failed to read from list.txt: " << rc;
+    }
+    buffer[bytes_read] = '\0';
+
+    f_close(&list_file_handle);
+
+    cout << buffer << endl;
+
+    return std::move(string{buffer});
+}
+
+vector<string> split_by_newlines(string &&content) {
     stringstream file_list{content};
     vector<string> files;
     string line;
