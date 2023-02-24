@@ -23,7 +23,6 @@ public:
     err_t http_headers_received(httpc_state_t *connection, pbuf *hdr, u16_t hdr_len, u32_t content_len);
     err_t http_body_received(tcp_pcb *conn, pbuf *p, err_t err);
     void do_request();
-    char *get_content();
 
 private:
     char *ip_address;
@@ -34,7 +33,6 @@ private:
 
     // Not sure if volatile is enough or if there are more powerful synchronisation primatives that need to be used here
     volatile bool completed = false;
-    char buffer[BUFFER_CAPACITY];
     size_t size = 0;
 };
 
