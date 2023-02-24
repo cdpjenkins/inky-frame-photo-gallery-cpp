@@ -163,6 +163,10 @@ int main() {
 
     while (true) {
         for (const auto &item: files) {
+            string jpeg_path = "/" + item;
+            string local_path = "/" + item;
+            http_get_to_file("192.168.1.51", 8000, jpeg_path.c_str(), local_path.c_str());
+
             cout << "Drawing JPEG: " << item << "... " << endl;
             inky.set_pen(0);
             inky.clear();
@@ -194,8 +198,10 @@ void filesystem_list(const char *path) {
 }
 
 void http_get_to_file(const char *ip_addres, int port, const char *path, const char *file_path) {
+    cout << "Downloading " << path << " to " << file_path << "... ";
     HttpConnection connection(ip_addres, port, path, file_path);
     connection.do_request();
+    cout << "Done." << endl;
 }
 
 basic_string<char> read_text_file(const char *file_path) {

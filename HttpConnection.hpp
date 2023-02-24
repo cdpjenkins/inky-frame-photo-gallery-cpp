@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-static const size_t BUFFER_CAPACITY = 8192;
+static const size_t BUFFER_CAPACITY = 16384;
 
 const size_t IP_V4_MAX_LENGTH = 20;     // longer than needed but meh
 const size_t PATH_MAX_LENGTH = 128;
@@ -30,6 +30,7 @@ private:
     char *path;
     FIL file_handle;
     char *filename;
+    int bytes_downloaded = 0;
 
     // Not sure if volatile is enough or if there are more powerful synchronisation primatives that need to be used here
     volatile bool completed = false;

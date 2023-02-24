@@ -39,6 +39,8 @@ void HttpConnection::http_result_received(httpc_result_t httpc_result, u32_t rx_
 }
 
 err_t HttpConnection::http_headers_received(httpc_state_t *connection, pbuf *hdr, u16_t hdr_len, u32_t content_len) {
+    // not sure if we need to do tcp_rcvd and then free the pbuf here as well...
+
     return ERR_OK;
 }
 
@@ -57,6 +59,17 @@ err_t HttpConnection::http_body_received(tcp_pcb *conn, pbuf *p, err_t err) {
     UINT bw;
     FRESULT res = f_write(&file_handle, (const void*)buffer, bytes_copied, &bw);
     if (res || bw < bytes_copied) return ERR_ABRT; /* error or disk full */
+
+    res = f_sync(&file_handle);
+    if (res != FR_OK) {
+        std::cout << "Failed to sync file!" << std::endl;
+    }
+
+    bytes_downloaded += size;
+
+    tcp_recved(conn, p->tot_len);
+
+    pbuf_free(p);
 
     return ERR_OK;
 }
@@ -90,6 +103,8 @@ void HttpConnection::do_request() {
         }
         cyw43_arch_lwip_end();
     }
+
+    std::cout << bytes_downloaded << " bytes downloaded" << std::endl;
 }
 
 HttpConnection::HttpConnection(const char *ip_address_param,
