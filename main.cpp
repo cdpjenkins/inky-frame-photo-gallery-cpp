@@ -155,7 +155,7 @@ int main() {
     }
     cout << "Filesystem mounted!" << endl;
 
-    filesystem_list("/");
+    // filesystem_list("/");
 
     http_get_to_file("192.168.1.51", 8000, "/list.txt", "/list.txt");
 
@@ -232,8 +232,6 @@ basic_string<char> read_text_file(const char *file_path) {
     buffer[bytes_read] = '\0';
 
     f_close(&list_file_handle);
-
-    cout << buffer << endl;
 
     return std::move(string{buffer});
 }
