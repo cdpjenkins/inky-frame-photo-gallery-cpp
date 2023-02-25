@@ -19,8 +19,8 @@ pico_sdk_init()
 
 # Add your source files
 add_executable(${NAME}
-        main.cpp
-        HttpConnection.cpp)
+        src/main.cpp
+        src/HttpConnection.cpp)
 
 # Include required libraries
 # This assumes `pimoroni-pico` is stored alongside your project
@@ -37,8 +37,8 @@ include(drivers/pcf85063a/pcf85063a)
 include(drivers/uc8159/uc8159)
 
 # This will make CI build work but won't actually help it to run...
-if (NOT wifi_settings.h)
-    configure_file(wifi_settings_template.h wifi_settings.h COPYONLY)
+if (NOT src/wifi_settings.h)
+    configure_file(src/wifi_settings_template.h src/wifi_settings.h COPYONLY)
 endif()
 
 # target_link_libraries(${NAME} pico_stdlib jpegdec inky_frame fatfs hardware_pwm hardware_spi hardware_i2c hardware_rtc fatfs sdcard pico_graphics)
