@@ -1,7 +1,8 @@
+#include <cstring>
 #include <iostream>
 #include <sstream>
+#include <stdexcept>
 #include <vector>
-#include <cstring>
 using namespace std;
 
 #include "libraries/inky_frame/inky_frame.hpp"
@@ -86,7 +87,6 @@ int jpegdec_draw_callback(JPEGDRAW *draw) {
 }
 
 void draw_jpeg(std::string filename, int x, int y, int w, int h) {
-
     // TODO: this is a horrible way to do it but we need to pass some parameters
     // into the jpegdec_draw_callback() method somehow and the library isn't
     // setup to allow any sort of user data to be passed around - yuck
@@ -108,7 +108,7 @@ void draw_jpeg(std::string filename, int x, int y, int w, int h) {
 
     jpeg.setPixelType(RGB565_BIG_ENDIAN);
 
-    cout << "- starting jpeg decode.." << endl;
+    cout << "Starting jpeg decode.." << endl;
     int start = millis();
     jpeg.decode(0, 0, 0);
     cout << "done in " << int(millis() - start) << " ms!" << endl;
@@ -116,15 +116,15 @@ void draw_jpeg(std::string filename, int x, int y, int w, int h) {
     jpeg.close();
 }
 
-int main() {
+int photo_gallery_main() {
     inky.init();
 
     stdio_init_all();
     sleep_ms(1000);
 
-    cout << "****************************" << endl;
-    cout << "Photo Gallery starting up..." << endl;
-    cout << "****************************" << endl << endl << endl;
+    cout << "*****************************" << endl;
+    cout << "Welcome to the Photo Gallery!" << endl;
+    cout << "*****************************" << endl << endl << endl;
 
     connect_wifi();
 
@@ -148,9 +148,10 @@ int main() {
             draw_jpeg(jpeg_filename, 0, 0, 600, 448);
             cout << "Done drawing JPEG" << endl;
 
-            cout << "Updating screen... ";
+            cout << "Updating screen... " << endl;
             inky.update();
-            cout << "Done." << endl << endl;
+            cout << "Done updating screen" << endl << endl;
+
             sleep_ms(600000);
         }
         cout << "Listing done!" << endl;
@@ -160,21 +161,35 @@ int main() {
     cyw43_arch_deinit();
 }
 
+int main() {
+    try {
+        photo_gallery_main();
+    } catch (runtime_error &e) {
+        cout << endl << endl << endl;
+        cout << "runtime_error:" << endl;
+        cout << e.what() << endl;
+    }
+}
+
 void connect_wifi() {
+    int rc;
+
     cout << "Setting up WiFI" << endl;
     cout << "Initialising CYW43... ";
-    if (cyw43_arch_init_with_country(CYW43_COUNTRY_UK)) {
-        cout << "Failed to init CYW43" << endl;
-//        return 1;
+    rc = cyw43_arch_init_with_country(CYW43_COUNTRY_UK);
+    if (rc) {
+        cout << "Return code: " << rc;
+        throw runtime_error("Failed to init CYW43");
     }
-    cout << "Done!" << endl;
+    cout << "Initialising CYW34 done." << endl;
 
     cyw43_arch_enable_sta_mode();
 
     cout << "Connecting to WiFi... ";
-    if (cyw43_arch_wifi_connect_blocking(WIFI_SSID, WIFI_PASSWORD, CYW43_AUTH_WPA2_MIXED_PSK)) {
-        cout << "Failed to connect to WiFi!" << endl;
-//        return 2;
+    rc = cyw43_arch_wifi_connect_blocking(WIFI_SSID, WIFI_PASSWORD, CYW43_AUTH_WPA2_MIXED_PSK);
+    if (rc) {
+        cout << "Return code: " << rc;
+        throw runtime_error("Failed to connect to WiFi");
     }
     cout << "Connected!" << endl;
 
@@ -188,8 +203,8 @@ void mount_sd_card_filesystem() {
     cout << "Mounting SD card filesystem... ";
     FRESULT fr = f_mount(&fs, "", 1);
     if (fr != FR_OK) {
-      cout << "Failed to mount SD card filesystem, error: " << fr << endl;
-//      return 1;
+        cout << "fr: " << fr << endl;
+        throw runtime_error("Failed to mount SD card filesystem");
     }
     cout << "Filesystem mounted!" << endl;
 }
@@ -210,7 +225,6 @@ void http_get_to_file(const char *ip_addres, int port, const char *path, const c
     cout << "Downloading " << path << " to " << file_path << "... ";
     HttpConnection connection(ip_addres, port, path, file_path);
     connection.do_request();
-    cout << "Done." << endl;
 }
 
 basic_string<char> read_text_file(const char *file_path) {
@@ -219,24 +233,25 @@ basic_string<char> read_text_file(const char *file_path) {
     char buffer[LIST_MAX_SIZE + 1];
 
     FIL list_file_handle;
-    if (f_open(&list_file_handle, file_path, FA_OPEN_EXISTING | FA_READ)) {
-        cout << "Failed to open /list.txt for reading" << endl;
-        // need... exceptions... here
-//        return 1;
+    FRESULT rc = f_open(&list_file_handle, file_path, FA_OPEN_EXISTING | FA_READ);
+    if (rc) {
+        cout << "rc: " << rc << endl;
+        throw runtime_error("Failed to open file for reading");
     }
 
     FSIZE_t list_txt_size = f_size(&list_file_handle);
     cout << "Size of list.txt is " << list_txt_size << endl;
     if (list_txt_size > LIST_MAX_SIZE) {
+
         cout << "Size of list.txt is too large: " << list_txt_size << " bytes" << endl;
-        // need... exceptions... here
-//        return 1;
+        throw runtime_error("Size of list.txt is too large");
     }
 
     UINT bytes_read;
-    FRESULT rc = f_read(&list_file_handle, buffer, list_txt_size, &bytes_read);
-    if (rc != FR_OK) {
-        cout << "Failed to read from list.txt: " << rc;
+    FRESULT fresult = f_read(&list_file_handle, buffer, list_txt_size, &bytes_read);
+    if (fresult != FR_OK) {
+        cout << "Failed to read from " << file_path << ": " << fresult;
+        throw runtime_error("Failed to read from file");
     }
     buffer[bytes_read] = '\0';
 

@@ -39,8 +39,6 @@ void HttpConnection::http_result_received(httpc_result_t httpc_result, u32_t rx_
 }
 
 err_t HttpConnection::http_headers_received(httpc_state_t *connection, pbuf *hdr, u16_t hdr_len, u32_t content_len) {
-    // not sure if we need to do tcp_rcvd and then free the pbuf here as well...
-
     return ERR_OK;
 }
 
@@ -71,7 +69,9 @@ err_t HttpConnection::http_body_received(tcp_pcb *conn, pbuf *p, err_t err) {
 
 void HttpConnection::do_request() {
     cyw43_arch_lwip_begin();
-    std::cout << "Doing HTTP request... ";
+
+    std::cout << "Doing HTTP request." << std::endl;
+
     completed = false;
     httpc_connection_t settings;
     settings.result_fn = http_result_callback;
@@ -99,6 +99,7 @@ void HttpConnection::do_request() {
         cyw43_arch_lwip_end();
     }
 
+    std::cout << "HTTP request done" << std::endl;
     std::cout << bytes_downloaded << " bytes downloaded" << std::endl;
 }
 
@@ -133,9 +134,7 @@ HttpConnection::HttpConnection(const char *ip_address_param,
     std::cout << "About to open file" << std::endl;
     if (f_open(&file_handle, filename, FA_CREATE_ALWAYS | FA_WRITE)) {
         std::cout << "ERROR: failed to open " << filename << std::endl;
-        return;
-
-        // wish we could use exceptions...
+        throw std::runtime_error("Failed to open file");
     }
     std::cout << "File is open" << std::endl;
 }
