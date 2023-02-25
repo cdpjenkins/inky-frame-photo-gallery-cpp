@@ -53,19 +53,14 @@ err_t HttpConnection::http_body_received(tcp_pcb *conn, pbuf *p, err_t err) {
         return ERR_MEM;
     }
 
-    char buffer[BUFFER_CAPACITY];
-    u16_t bytes_copied = pbuf_copy_partial(p, buffer, size, 0);
+    for (pbuf* this_pbuf = p; this_pbuf != nullptr; this_pbuf = this_pbuf->next) {
+        UINT bw;
+        FRESULT res =f_write(&file_handle, this_pbuf->payload, this_pbuf->len, &bw);
 
-    UINT bw;
-    FRESULT res = f_write(&file_handle, (const void*)buffer, bytes_copied, &bw);
-    if (res || bw < bytes_copied) return ERR_ABRT; /* error or disk full */
+        if (res || bw < this_pbuf->len) return ERR_ABRT; // no point carrying on if we can't write
 
-    res = f_sync(&file_handle);
-    if (res != FR_OK) {
-        std::cout << "Failed to sync file!" << std::endl;
+        bytes_downloaded += this_pbuf->len;
     }
-
-    bytes_downloaded += size;
 
     tcp_recved(conn, p->tot_len);
 
