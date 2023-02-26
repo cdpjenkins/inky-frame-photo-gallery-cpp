@@ -138,19 +138,19 @@ int photo_gallery_main() {
 
     while (true) {
         for (const auto &jpeg_filename: files) {
-            inky.led(pimoroni::InkyFrame::LED_ACTIVITY, 100);
+            inky.led(pimoroni::InkyFrame::LED_CONNECTION, 100);
             string jpeg_path = "/" + jpeg_filename;
             string local_path = "/" + jpeg_filename;
             http_get_to_file("192.168.1.51", 8000, jpeg_path.c_str(), local_path.c_str());
-            inky.led(pimoroni::InkyFrame::LED_ACTIVITY, 0);
+            inky.led(pimoroni::InkyFrame::LED_CONNECTION, 0);
 
-            inky.led(pimoroni::InkyFrame::LED_CONNECTION, 100);
+            inky.led(pimoroni::InkyFrame::LED_ACTIVITY, 100);
             cout << "Drawing JPEG: " << jpeg_filename << "... " << endl;
             inky.set_pen(0);
             inky.clear();
             draw_jpeg(jpeg_filename, 0, 0, 600, 448);
             cout << "Done drawing JPEG" << endl;
-            inky.led(pimoroni::InkyFrame::LED_CONNECTION, 0);
+            inky.led(pimoroni::InkyFrame::LED_ACTIVITY, 0);
 
             cout << "Updating screen... " << endl;
             inky.update();
