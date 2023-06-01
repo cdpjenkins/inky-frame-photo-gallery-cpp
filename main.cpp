@@ -126,13 +126,13 @@ int photo_gallery_main() {
     cout << "Welcome to the Photo Gallery!" << endl;
     cout << "*****************************" << endl << endl << endl;
 
-    connect_wifi();
+//    connect_wifi();
 
     mount_sd_card_filesystem();
 
     // filesystem_list("/");
 
-    http_get_to_file("192.168.1.51", 8000, "/list.txt", "/list.txt");
+//    http_get_to_file("192.168.1.51", 8000, "/list.txt", "/list.txt");
 
     vector<string> files = split_by_newlines(read_text_file("/list.txt"));
 
@@ -141,13 +141,14 @@ int photo_gallery_main() {
             inky.led(pimoroni::InkyFrame::LED_CONNECTION, 100);
             string jpeg_path = "/" + jpeg_filename;
             string local_path = "/" + jpeg_filename;
-            http_get_to_file("192.168.1.51", 8000, jpeg_path.c_str(), local_path.c_str());
+//            http_get_to_file("192.168.1.51", 8000, jpeg_path.c_str(), local_path.c_str());
             inky.led(pimoroni::InkyFrame::LED_CONNECTION, 0);
 
             inky.led(pimoroni::InkyFrame::LED_ACTIVITY, 100);
             cout << "Drawing JPEG: " << jpeg_filename << "... " << endl;
             inky.set_pen(0);
             inky.clear();
+
             draw_jpeg(jpeg_filename, 0, 0, 600, 448);
             cout << "Done drawing JPEG" << endl;
             inky.led(pimoroni::InkyFrame::LED_ACTIVITY, 0);
@@ -240,6 +241,7 @@ basic_string<char> read_text_file(const char *file_path) {
     FRESULT rc = f_open(&list_file_handle, file_path, FA_OPEN_EXISTING | FA_READ);
     if (rc) {
         cout << "rc: " << rc << endl;
+        cout << file_path << endl;
         throw runtime_error("Failed to open file for reading");
     }
 
